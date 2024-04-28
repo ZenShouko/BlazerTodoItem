@@ -1,0 +1,47 @@
+@page "/todoDb"
+@using BlazerToDoItem.Data
+@inject AppDbContext _context;
+
+<h3>Todo list</h3>
+<h4>Total Items @todos.Count()</h4>
+<h6 style="color: darkred">MadaMada 👹⁉️: (@todos.Count(x => !x.IsDone))</h6>
+<h6 style="color: darkgreen">OWATTANÉ 🤭🍑: (@todos.Count(x => x.IsDone))</h6>
+
+<ul>
+    @foreach(var todo in todos)
+    {
+        <li>
+            <input type="checkbox" @bind="@todo.IsDone"/>
+            <input type="text" @bind="@todo.Title"/>
+        </li>
+    }
+</ul>
+
+<input @bind="newTodo" placeholder="Something to do..." />
+<button @onclick="AddTodo" class="btn btn-primary">Add!</button>
+
+@code {
+    private List<TodoItem> todos = new List<TodoItem>();
+    protected override async Task OnInitializedAsync()
+    {
+        todos = await Task.Run(() => _context.TodoItems.ToList());
+    }
+
+    private string newTodo = string.Empty;
+
+    private void AddTodo()
+    {
+        //Return if the newTodo is empty
+        if (string.IsNullOrWhiteSpace(newTodo)) return;
+        
+        //Create new item and add it to the database& list
+        var todo = new TodoItem { Title = newTodo };
+        _context.TodoItems.Add(todo);
+        _context.SaveChanges();
+        todos.Add(todo);
+        
+        //Clear the newTodo string
+        newTodo = string.Empty;
+    }
+    
+}
